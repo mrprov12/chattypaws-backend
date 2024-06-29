@@ -104,6 +104,9 @@ make reset_db
 The `chattypaws-backend` project uses environment variables for configuration. Below is the format of the required environment variables in `.env`, `.env.test`, `.env.prod` (using local as example):
 
 ```plaintext
+FLASK_ENV=development
+SECRET_KEY=your_secret_key
+
 # SQL credentials
 DB_HOST=localhost
 DB_PORT=5432
@@ -116,11 +119,58 @@ SCHEMA_FILE=./db/schema.sql
 RTSP_URL=your_rtsp_url
 STREAM_USERNAME=your_stream_username
 STREAM_PASSWORD=your_stream_password
+
+# ONVIF Credentials
+ONVIF_IP=your_onvif_ip
+ONVIF_PORT=your_onvif_port
+ONVIF_USERNAME=your_onvif_username
+ONVIF_PASSWORD=your_onvif_password
+
+# Application settings
+APP_HOST=localhost
+APP_PORT=5000
 ```
 
-## Usage
+## Set Up
 
-Navigate to the `image-processing-package` directory and follow the usage instructions in the package's `README.md`.
+Ensure your .env file is properly configured with the necessary environment variables.
+
+Setup app:
+
+```sh
+
+make init
+```
+
+Setup DB:
+
+```sh
+make init_db
+```
+
+Run the app:
+
+```sh
+python src/app.py  # This will initialize the database and start the server
+
+#OR
+
+make run
+```
+
+Clean up:
+
+```sh
+# Clean the environment (remove virtual environment)
+clean:
+	rm -rf env
+
+# Reset the database
+reset_db:
+	./scripts/reset_db.sh
+```
+
+The server should now be running and accessible at http://<APP_HOST>:<APP_PORT>.
 
 ## License
 
@@ -138,56 +188,16 @@ This repository contains the backend code for ChattyPaws, an interactive pet but
 - **API Endpoints:** Provide RESTful API endpoints for the frontend applications.
 - **User Authentication:** Secure login using Google SSO (with plans to add Apple and Facebook SSO).
 
-## Getting Started
-
-1. **Clone the repository:**
-
-   ```sh
-   git clone https://github.com/yourusername/chattypaws-backend.git
-   cd chattypaws-backend
-   ```
-
-2. **Set up a virtual environment:**
-
-   ```sh
-   python -m venv env
-   source env/bin/activate  # On Windows: env\Scripts\activate
-   ```
-
-3. **Install dependencies:**
-
-   ```
-   pip install -r requirements.txt
-   ```
-
-4. **Set up PostgreSQL:**
-
-   - Ensure PostgreSQL is installed and running.
-   - Create a new database for the project:
-     createdb chattypaws
-
-5. **Set up environment variables:**
-
-   - Create a `.env` file in the root directory and add the following environment variables:
-     ```
-     FLASK_ENV=development
-     DATABASE_URL=postgresql://user:password@localhost/chattypaws
-     SECRET_KEY=your_secret_key
-     GOOGLE_CLIENT_ID=your_google_client_id
-     GOOGLE_CLIENT_SECRET=your_google_client_secret
-     ```
-
-6. **Run the application:**
-   ```
-   python src/main.py
-   ```
-
 ## API Endpoints
 
-- **POST /login:** Login with Google SSO.
-- **POST /process:** Process video feed and store interactions (authentication required).
-- **POST /camera:** Integrate a new camera feed (authentication required).
-- **GET /current_user:** Get the current logged-in user.
+Use Swagger endpoint for easy interaction with endpoints: `${host}/swagger`
+
+- **POST /user/login:** Login with local handling.
+- **POST /user/register:** Register with local handling.
+- **POST /image_processing/process:** Process video feed and store interactions (authentication required).
+- **POST /image_processing/stream_integration:** Integrate a new camera feed stream (authentication required).
+- **GET /user:** Get the current logged-in user.
+- **GET /notification/user/{user_id}/stream/{stream_id}:** Get the history of notifications, with support for pagination in the future.
 
 ## Contributing
 

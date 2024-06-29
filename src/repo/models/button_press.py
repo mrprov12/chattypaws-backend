@@ -1,8 +1,9 @@
-from repo.database import execute_query
-
 class ButtonPress:
+    def __init__(self, execute_query):
+        self.execute_query = execute_query
+
     @staticmethod
-    def create_table():
+    def create_table(self):
         query = """
         CREATE TABLE IF NOT EXISTS button_presses (
             press_id SERIAL PRIMARY KEY,
@@ -16,4 +17,4 @@ class ButtonPress:
             FOREIGN KEY (button_id) REFERENCES buttons(button_id)
         );
         """
-        execute_query(query)
+        self.execute_query(query)

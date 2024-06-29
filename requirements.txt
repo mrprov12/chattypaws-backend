@@ -1,9 +1,14 @@
 absl-py==2.1.0
 astunparse==1.6.3
 attrs==23.2.0
+blinker==1.8.2
 certifi==2024.2.2
 charset-normalizer==3.3.2
+click==8.1.7
 exceptiongroup==1.2.1
+Flask==3.0.3
+Flask-Cors==4.0.1
+flask-swagger-ui==4.11.1
 flatbuffers==24.3.25
 gast==0.5.4
 google-pasta==0.2.0
@@ -11,10 +16,11 @@ greenlet==3.0.3
 grpcio==1.63.0
 h5py==3.11.0
 idna==3.7
--e git+ssh://git@github.com/mrprov12/chattypaws-backend.git@a7eda8d52c664c32b89330fba75c91b0249bf196#egg=image_processing_package&subdirectory=image-processing-package
 importlib_metadata==7.1.0
 iniconfig==2.0.0
 isodate==0.6.1
+itsdangerous==2.2.0
+Jinja2==3.1.4
 keras==3.3.3
 libclang==18.1.1
 lxml==5.2.2

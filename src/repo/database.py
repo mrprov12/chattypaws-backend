@@ -1,6 +1,5 @@
 import psycopg2
-import os
-from dotenv import load_dotenv
+from src.app_config import config
 
 from models.user import User
 from models.pet import Pet
@@ -12,9 +11,6 @@ from models.session_history import SessionHistory
 from models.setting import Setting
 from models.notification import Notification
 from models.stream_credential import StreamCredential
-
-# Load environment variables from .env file
-load_dotenv()
 
 def init_db():
     User.create_table()
@@ -31,11 +27,11 @@ def init_db():
 
 def get_db_connection():
     conn = psycopg2.connect(
-        host=os.getenv("DB_HOST"),
-        port=os.getenv("DB_PORT"),
-        database=os.getenv("DB_DATABASE_NAME"),
-        user=os.getenv("DB_USERNAME"),
-        password=os.getenv("DB_PASSWORD")
+        host=config.DB_HOST,
+        port=config.DB_PORT,
+        database=config.DB_DATABASE_NAME,
+        user=config.DB_USERNAME,
+        password=config.DB_PASSWORD
     )
     return conn
 

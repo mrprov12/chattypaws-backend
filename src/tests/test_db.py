@@ -1,231 +1,141 @@
-import unittest
-from ..repo.database import execute_query
-from ..repo.models.user import User
-from ..repo.models.pet import Pet
-from ..repo.models.button import Button
-from ..repo.models.tile import Tile
-from ..repo.models.button_press import ButtonPress
-from ..repo.models.video_streams import VideoStream
-from ..repo.models.session_history import SessionHistory
-from ..repo.models.setting import Setting
-from ..repo.models.notification import Notification
-from ..repo.models.stream_credential import StreamCredential
+# tests/test_db.py
+from src.extensions import db
+from src.models.user import User
+from src.models.pet import Pet
+from src.models.button import Button
+from src.models.tile import Tile
+from src.models.button_press import ButtonPress
+from src.models.video_streams import VideoStreams
+from src.models.session_history import SessionHistory
+from src.models.setting import Setting
+from src.models.notification import Notification
+from src.models.stream_credential import StreamCredential
+from src.models.processing_result import ProcessingResult
 
 
-class TestDatabase(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        # Create tables
-        User.create_table()
-        Pet.create_table()
-        Button.create_table()
-        Tile.create_table()
-        ButtonPress.create_table()
-        VideoStream.create_table()
-        SessionHistory.create_table()
-        Setting.create_table()
-        Notification.create_table()
-        StreamCredential.create_table()
-
-    def test_user_table(self):
-        query = "INSERT INTO users (username, password_hash, email) VALUES (%s, %s, %s) RETURNING user_id;"
-        params = ("test_user", "hash123", "test@example.com")
-        user_id = execute_query(query, params)[0][0]
-
-        query = "SELECT * FROM users WHERE user_id = %s;"
-        params = (user_id,)
-        user = execute_query(query, params)[0]
-
-        self.assertEqual(user[1], "test_user")
-        self.assertEqual(user[2], "hash123")
-        self.assertEqual(user[3], "test@example.com")
-
-    def test_pet_table(self):
-        query = "INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING user_id;"
-        user_params = ("pet_owner", "hash123")
-        user_id = execute_query(query, user_params)[0][0]
-
-        query = "INSERT INTO pets (user_id, name, breed, sex, photo_url) VALUES (%s, %s, %s, %s, %s) RETURNING pet_id;"
-        params = (
-            user_id,
-            "Buddy",
-            "Golden Retriever",
-            "Male",
-            "http://example.com/buddy.jpg",
-        )
-        pet_id = execute_query(query, params)[0][0]
-
-        query = "SELECT * FROM pets WHERE pet_id = %s;"
-        params = (pet_id,)
-        pet = execute_query(query, params)[0]
-
-        self.assertEqual(pet[1], user_id)
-        self.assertEqual(pet[2], "Buddy")
-        self.assertEqual(pet[3], "Golden Retriever")
-        self.assertEqual(pet[4], "Male")
-        self.assertEqual(pet[5], "http://example.com/buddy.jpg")
-
-    def test_button_table(self):
-        query = "INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING user_id;"
-        user_params = ("button_user", "hash123")
-        user_id = execute_query(query, user_params)[0][0]
-
-        query = "INSERT INTO tiles (user_id, name) VALUES (%s, %s) RETURNING tile_id;"
-        tile_params = (user_id, "Living Room")
-        tile_id = execute_query(query, tile_params)[0][0]
-
-        query = "INSERT INTO buttons (user_id, tile_id, name, position_x, position_y) VALUES (%s, %s, %s, %s, %s) RETURNING button_id;"
-        params = (user_id, tile_id, "Play", 1, 1)
-        button_id = execute_query(query, params)[0][0]
-
-        query = "SELECT * FROM buttons WHERE button_id = %s;"
-        params = (button_id,)
-        button = execute_query(query, params)[0]
-
-        self.assertEqual(button[1], user_id)
-        self.assertEqual(button[3], tile_id)
-        self.assertEqual(button[4], "Play")
-        self.assertEqual(button[5], 1)
-        self.assertEqual(button[6], 1)
-
-    def test_tile_table(self):
-        query = "INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING user_id;"
-        user_params = ("tile_user", "hash123")
-        user_id = execute_query(query, user_params)[0][0]
-
-        query = "INSERT INTO tiles (user_id, name) VALUES (%s, %s) RETURNING tile_id;"
-        params = (user_id, "Bedroom")
-        tile_id = execute_query(query, params)[0][0]
-
-        query = "SELECT * FROM tiles WHERE tile_id = %s;"
-        params = (tile_id,)
-        tile = execute_query(query, params)[0]
-
-        self.assertEqual(tile[1], user_id)
-        self.assertEqual(tile[2], "Bedroom")
-
-    def test_button_press_table(self):
-        query = "INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING user_id;"
-        user_params = ("press_user", "hash123")
-        user_id = execute_query(query, user_params)[0][0]
-
-        query = "INSERT INTO pets (user_id, name) VALUES (%s, %s) RETURNING pet_id;"
-        pet_params = (user_id, "Rex")
-        pet_id = execute_query(query, pet_params)[0][0]
-
-        query = "INSERT INTO tiles (user_id, name) VALUES (%s, %s) RETURNING tile_id;"
-        tile_params = (user_id, "Kitchen")
-        tile_id = execute_query(query, tile_params)[0][0]
-
-        query = "INSERT INTO buttons (user_id, tile_id, name, position_x, position_y) VALUES (%s, %s, %s, %s, %s) RETURNING button_id;"
-        button_params = (user_id, tile_id, "Eat", 2, 3)
-        button_id = execute_query(query, button_params)[0][0]
-
-        query = "INSERT INTO button_presses (user_id, pet_id, button_id, timestamp, confidence) VALUES (%s, %s, %s, NOW(), %s) RETURNING press_id;"
-        params = (user_id, pet_id, button_id, 0.95)
-        press_id = execute_query(query, params)[0][0]
-
-        query = "SELECT * FROM button_presses WHERE press_id = %s;"
-        params = (press_id,)
-        press = execute_query(query, params)[0]
-
-        self.assertEqual(press[1], user_id)
-        self.assertEqual(press[2], pet_id)
-        self.assertEqual(press[3], button_id)
-        self.assertAlmostEqual(press[5], 0.95, places=2)
-
-    def test_video_stream_table(self):
-        query = "INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING user_id;"
-        user_params = ("stream_user", "hash123")
-        user_id = execute_query(query, user_params)[0][0]
-
-        query = "INSERT INTO video_streams (user_id, url) VALUES (%s, %s) RETURNING stream_id;"
-        params = (user_id, "http://example.com/stream")
-        stream_id = execute_query(query, params)[0][0]
-
-        query = "SELECT * FROM video_streams WHERE stream_id = %s;"
-        params = (stream_id,)
-        stream = execute_query(query, params)[0]
-
-        self.assertEqual(stream[1], user_id)
-        self.assertEqual(stream[2], "http://example.com/stream")
-
-    def test_session_history_table(self):
-        query = "INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING user_id;"
-        user_params = ("session_user", "hash123")
-        user_id = execute_query(query, user_params)[0][0]
-
-        query = "INSERT INTO session_history (user_id, start_time, end_time) VALUES (%s, NOW(), NOW()) RETURNING session_id;"
-        params = (user_id,)
-        session_id = execute_query(query, params)[0][0]
-
-        query = "SELECT * FROM session_history WHERE session_id = %s;"
-        params = (session_id,)
-        session = execute_query(query, params)[0]
-
-        self.assertEqual(session[1], user_id)
-
-    def test_setting_table(self):
-        query = "INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING user_id;"
-        user_params = ("setting_user", "hash123")
-        user_id = execute_query(query, user_params)[0][0]
-
-        query = "INSERT INTO settings (user_id, setting_key, setting_value) VALUES (%s, %s, %s) RETURNING setting_id;"
-        params = (user_id, "theme", "dark")
-        setting_id = execute_query(query, params)[0][0]
-
-        query = "SELECT * FROM settings WHERE setting_id = %s;"
-        params = (setting_id,)
-        setting = execute_query(query, params)[0]
-
-        self.assertEqual(setting[1], user_id)
-        self.assertEqual(setting[2], "theme")
-        self.assertEqual(setting[3], "dark")
-
-    def test_notification_table(self):
-        query = "INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING user_id;"
-        user_params = ("notify_user", "hash123")
-        user_id = execute_query(query, user_params)[0][0]
-
-        query = "INSERT INTO notifications (user_id, message, type, read) VALUES (%s, %s, %s, %s) RETURNING notification_id;"
-        params = (user_id, "You have a new message!", "info", False)
-        notification_id = execute_query(query, params)[0][0]
-
-        query = "SELECT * FROM notifications WHERE notification_id = %s;"
-        params = (notification_id,)
-        notification = execute_query(query, params)[0]
-
-        self.assertEqual(notification[1], user_id)
-        self.assertEqual(notification[2], "You have a new message!")
-        self.assertEqual(notification[3], "info")
-        self.assertFalse(notification[4])
-
-    def test_stream_credential_table(self):
-        query = "INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING user_id;"
-        user_params = ("stream_user", "hash123")
-        user_id = execute_query(query, user_params)[0][0]
-
-        query = "INSERT INTO stream_credentials (user_id, stream_type, url, username, password) VALUES (%s, %s, %s, %s, %s) RETURNING id;"
-        params = (
-            user_id,
-            "rtsp",
-            "rtsp://example.com/stream",
-            "stream_user",
-            "stream_pass",
-        )
-        credential_id = execute_query(query, params)[0][0]
-
-        query = "SELECT * FROM stream_credentials WHERE id = %s;"
-        params = (credential_id,)
-        credential = execute_query(query, params)[0]
-
-        self.assertEqual(credential[1], user_id)
-        self.assertEqual(credential[2], "rtsp")
-        self.assertEqual(credential[3], "rtsp://example.com/stream")
-        self.assertEqual(credential[4], "stream_user")
-        self.assertEqual(credential[5], "stream_pass")
+def test_user_model(db):
+    user = User(username="testuser", password_hash="hash", email="test@example.com")
+    db.session.add(user)
+    db.session.commit()
+    assert user.id is not None
 
 
-if __name__ == "__main__":
-    unittest.main()
+def test_pet_model(db):
+    user = User(username="testuser", password_hash="hash", email="test@example.com")
+    db.session.add(user)
+    db.session.commit()
+    pet = Pet(name="testpet", user_id=user.id)
+    db.session.add(pet)
+    db.session.commit()
+    assert pet.id is not None
+
+
+def test_button_model(db):
+    user = User(username="testuser", password_hash="hash", email="test@example.com")
+    db.session.add(user)
+    db.session.commit()
+    tile = Tile(user_id=user.id, name="testtile")
+    db.session.add(tile)
+    db.session.commit()
+    button = Button(name="testbutton", user_id=user.id, tile_id=tile.id)
+    db.session.add(button)
+    db.session.commit()
+    assert button.id is not None
+
+
+def test_video_stream_model(db):
+    user = User(username="testuser", password_hash="hash", email="test@example.com")
+    db.session.add(user)
+    db.session.commit()
+    video_stream = VideoStreams(user_id=user.id, url="http://example.com/stream")
+    db.session.add(video_stream)
+    db.session.commit()
+    assert video_stream.stream_id is not None
+
+
+def test_notification_model(db):
+    user = User(username="testuser", password_hash="hash", email="test@example.com")
+    db.session.add(user)
+    db.session.commit()
+    notification = Notification(user_id=user.id, message="test notification")
+    db.session.add(notification)
+    db.session.commit()
+    assert notification.id is not None
+
+
+def test_tile_model(db):
+    user = User(username="testuser", password_hash="hash", email="test@example.com")
+    db.session.add(user)
+    db.session.commit()
+    tile = Tile(name="testtile", user_id=user.id)
+    db.session.add(tile)
+    db.session.commit()
+    assert tile.id is not None
+
+
+def test_button_press_model(db):
+    user = User(username="testuser", password_hash="hash", email="test@example.com")
+    db.session.add(user)
+    db.session.commit()
+    pet = Pet(name="testpet", user_id=user.id)
+    db.session.add(pet)
+    db.session.commit()
+    button = Button(name="testbutton", user_id=user.id, tile_id=1)
+    db.session.add(button)
+    db.session.commit()
+    button_press = ButtonPress(
+        user_id=user.id,
+        pet_id=pet.id,
+        button_id=button.id,
+        timestamp="2024-06-30T12:34:56",
+    )
+    db.session.add(button_press)
+    db.session.commit()
+    assert button_press.id is not None
+
+
+def test_session_history_model(db):
+    user = User(username="testuser", password_hash="hash", email="test@example.com")
+    db.session.add(user)
+    db.session.commit()
+    session_history = SessionHistory(user_id=user.id, start_time="2024-06-30T12:34:56")
+    db.session.add(session_history)
+    db.session.commit()
+    assert session_history.id is not None
+
+
+def test_setting_model(db):
+    user = User(username="testuser", password_hash="hash", email="test@example.com")
+    db.session.add(user)
+    db.session.commit()
+    setting = Setting(user_id=user.id, setting_key="theme", setting_value="dark")
+    db.session.add(setting)
+    db.session.commit()
+    assert setting.id is not None
+
+
+def test_stream_credential_model(db):
+    user = User(username="testuser", password_hash="hash", email="test@example.com")
+    db.session.add(user)
+    db.session.commit()
+    stream_credential = StreamCredential(
+        user_id=user.id,
+        stream_type="rtsp",
+        url="http://example.com/stream",
+        username="streamuser",
+        password="streampass",
+    )
+    db.session.add(stream_credential)
+    db.session.commit()
+    assert stream_credential.id is not None
+
+
+def test_processing_result_model(db):
+    processing_result = ProcessingResult(
+        timestamp="2024-06-30T12:34:56",
+        button_press=True,
+        additional_data={"example": "data"},
+    )
+    db.session.add(processing_result)
+    db.session.commit()
+    assert processing_result.id is not None

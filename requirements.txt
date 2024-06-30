@@ -62,3 +62,5 @@ Werkzeug==3.0.3
 wrapt==1.16.0
 zeep==4.2.1
 zipp==3.18.2
+Flask-SQLAlchemy==3.0.5
+Flask-Migrate==4.0.4

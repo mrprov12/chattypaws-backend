@@ -1,73 +1,53 @@
+# app.py
 from flask import Flask
-from flask_cors import CORS
-import logging
-from app_config import config
-from repo.database import repo
-from router.router import router
+from app_config import Config
+from extensions import db, migrate, cors
+from routes.init import register_routes
 
 
-class App:
-    def __init__(self):
-        self.config = config
-        self.app = Flask(__name__, static_folder="assets")
-        self.app.config.from_object(config)
-        self.app.secret_key = self.config.SECRET_KEY
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(Config)
+    app.secret_key = app.config["SECRET_KEY"]
 
-        # Enable CORS
-        CORS(self.app)
+    # Enable CORS
+    cors.init_app(app)
 
-        # Initialize repository and router
-        self.repo = repo
-        self.router = router
+    # Initialize extensions
+    db.init_app(app)
+    migrate.init_app(app, db)
 
-        self.setup_routes()
-        self.setup_error_handlers()
-        self.setup_logging()
+    # Register routes
+    register_routes(app)
 
-    def setup_routes(self):
-        try:
-            self.router.setup_routes()
-            self.app.register_blueprint(self.router.router_bp)
-        except Exception as e:
-            self.app.logger.error(f"Error setting up routes: {e}")
-            raise
+    setup_error_handlers(app)
+    setup_logging(app)
 
-    def setup_error_handlers(self):
-        @self.app.errorhandler(404)
-        def not_found(error):
-            return {"error": "Not Found"}, 404
+    return app
 
-        @self.app.errorhandler(500)
-        def internal_error(error):
-            self.app.logger.error(f"Server Error: {error}")
-            return {"error": "Internal Server Error"}, 500
 
-    def setup_logging(self):
-        logging.basicConfig(level=logging.INFO)
-        self.app.logger.info("Logging setup complete.")
+def setup_error_handlers(app):
+    @app.errorhandler(404)
+    def not_found(error):
+        return {"error": "Not Found"}, 404
 
-    def run(self):
-        try:
-            self.app.run(
-                host=self.config.APP_HOST,
-                port=int(self.config.APP_PORT),
-                debug=self.config.FLASK_ENV == "development",
-            )
-        except Exception as e:
-            self.app.logger.error(f"Error running the application: {e}")
-            raise
+    @app.errorhandler(500)
+    def internal_error(error):
+        app.logger.error(f"Server Error: {error}")
+        return {"error": "Internal Server Error"}, 500
 
-    def close(self):
-        try:
-            self.repo.close()
-        except Exception as e:
-            self.app.logger.error(f"Error closing the repository: {e}")
-            raise
+
+def setup_logging(app):
+    import logging
+
+    logging.basicConfig(level=logging.INFO)
+    app.logger.info("Logging setup complete.")
 
 
 if __name__ == "__main__":
-    app_instance = App()
-    try:
-        app_instance.run()
-    finally:
-        app_instance.close()
+    app = create_app()
+    app.run(
+        host=app.config["APP_HOST"],
+        port=int(app.config["APP_PORT"]),
+        debug=app.config["FLASK_ENV"] == "development",
+    )

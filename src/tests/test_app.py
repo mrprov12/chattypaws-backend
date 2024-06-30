@@ -1,25 +1,42 @@
-import unittest
-import os
-from dotenv import load_dotenv
-
-from ..app import process_rtsp_video_stream
-
-# Load environment variables from .env file
-load_dotenv()
+# tests/test_app.py
 
 
-class TestApp(unittest.TestCase):
+def test_home_route(client):
+    response = client.get("/")
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["message"] == "Welcome to ChattyPaws Backend API!"
 
-    def setUp(self):
-        self.rtsp_url = os.getenv("RTSP_URL")
-        self.username = os.getenv("STREAM_USERNAME")
-        self.password = os.getenv("STREAM_PASSWORD")
 
-    def test_process_video_stream(self):
-        try:
-            process_rtsp_video_stream(self.rtsp_url, self.username, self.password)
-        except Exception as e:
-            self.fail(f"process_video_stream() raised {e} unexpectedly!")
+def test_user_register(client, db):
+    response = client.post(
+        "/user/register",
+        json={"email": "test@example.com", "password": "securepassword"},
+    )
+    assert response.status_code == 201
+    data = response.get_json()
+    assert data["message"] == "User registered successfully"
+    assert "user_id" in data
 
-if __name__ == "__main__":
-    unittest.main()
+
+def test_user_login(client, db):
+    client.post(
+        "/user/register",
+        json={"email": "test@example.com", "password": "securepassword"},
+    )
+    response = client.post(
+        "/user/login", json={"email": "test@example.com", "password": "securepassword"}
+    )
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["message"] == "Login successful"
+
+
+def test_notification_get_notification_history(client, db):
+    response = client.get("/notification/1/stream/1")
+    assert response.status_code == 200
+    data = response.get_json()
+    assert "notifications" in data
+
+
+# Add more tests for other routes

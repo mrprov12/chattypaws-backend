@@ -48,7 +48,11 @@ class App:
 
     def run(self):
         try:
-            self.app.run(host=self.config.APP_HOST, port=int(self.config.APP_PORT))
+            self.app.run(
+                host=self.config.APP_HOST,
+                port=int(self.config.APP_PORT),
+                debug=self.config.FLASK_ENV == "development",
+            )
         except Exception as e:
             self.app.logger.error(f"Error running the application: {e}")
             raise

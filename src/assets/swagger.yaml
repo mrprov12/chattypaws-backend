@@ -3,7 +3,7 @@ info:
   description: "API documentation for ChattyPaws Backend"
   version: "1.0.0"
   title: "ChattyPaws API"
-host: "localhost:5001"
+host: "localhost:8000"
 basePath: "/"
 tags:
   - name: "user"

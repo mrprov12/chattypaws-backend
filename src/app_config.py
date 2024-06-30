@@ -7,6 +7,8 @@ load_dotenv()
 
 class Config:
     def __init__(self):
+        self.FLASK_APP = os.environ.get("FLASK_APP")
+        self.FLASK_ENV = os.environ.get("FLASK_ENV")
         self.SECRET_KEY = os.environ.get("SECRET_KEY")
 
         self.DB_HOST = os.getenv("DB_HOST", "0.0.0.0")

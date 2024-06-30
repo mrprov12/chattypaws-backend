@@ -11,7 +11,7 @@ export $(shell sed 's/=.*//' .env)
 # SETUP
 init:
 	#SETUP VENV
-	python3 -m venv envTS
+	python3 -m venv env
 	make update_requirements
 	make install
 

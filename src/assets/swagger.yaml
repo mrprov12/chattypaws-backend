@@ -1,0 +1,146 @@
+swagger: "2.0"
+info:
+  description: "API documentation for ChattyPaws Backend"
+  version: "1.0.0"
+  title: "ChattyPaws API"
+host: "localhost:8000"
+basePath: "/"
+tags:
+  - name: "user"
+    description: "Operations about user"
+  - name: "video"
+    description: "Operations about video"
+schemes:
+  - "http"
+paths:
+  /user/login:
+    post:
+      tags:
+        - "user"
+      summary: "Login with local handling"
+      description: ""
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "User login details"
+          required: true
+          schema:
+            type: "object"
+            properties:
+              username:
+                type: "string"
+              password:
+                type: "string"
+      responses:
+        200:
+          description: "Login successful"
+        401:
+          description: "Invalid credentials"
+  /user/register:
+    post:
+      tags:
+        - "user"
+      summary: "Register with local handling"
+      description: ""
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "User registration details"
+          required: true
+          schema:
+            type: "object"
+            properties:
+              username:
+                type: "string"
+              password:
+                type: "string"
+              email:
+                type: "string"
+      responses:
+        201:
+          description: "User registered successfully"
+        400:
+          description: "Invalid data"
+  /image_processing/process:
+    post:
+      tags:
+        - "image_processing"
+      summary: "Process video feed and store interactions"
+      description: ""
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "Video processed successfully"
+        401:
+          description: "Unauthorized"
+  /image_processing/stream_integration:
+    post:
+      tags:
+        - "image_processing"
+      summary: "Integrate a new camera feed stream"
+      description: ""
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Stream integration details"
+          required: true
+          schema:
+            type: "object"
+            properties:
+              stream_url:
+                type: "string"
+      responses:
+        201:
+          description: "Stream integrated successfully"
+        401:
+          description: "Unauthorized"
+  /user:
+    get:
+      tags:
+        - "user"
+      summary: "Get the current logged-in user"
+      description: ""
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "Current user details"
+        401:
+          description: "Unauthorized"
+  /notification/user/{user_id}/stream/{stream_id}:
+    get:
+      tags:
+        - "notification"
+      summary: "Get the history of notifications for a particular user and stream"
+      description: ""
+      produces:
+        - "application/json"
+      parameters:
+        - name: "user_id"
+          in: "path"
+          required: true
+          type: "integer"
+        - name: "stream_id"
+          in: "path"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "List of notifications"
+        401:
+          description: "Unauthorized"
